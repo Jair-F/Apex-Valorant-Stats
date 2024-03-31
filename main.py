@@ -1,11 +1,11 @@
 import urllib3
 import json
 
-locale = "europe" # europe ap br esports eu
-api_key = ""
-tagLine = None
-gameName = ""
-puuid = None
+locale:str = None # europe ap br esports eu
+api_key:str = None
+tagLine:int = None
+gameName:str = None
+puuid:str = None
 
 http = urllib3.PoolManager()
 
@@ -72,7 +72,11 @@ def getAccountPuuid(gameName:str, tagLine:str, locale:str="europe") -> str:
 		raise ValueError(F"invalid parameter passed or other unknown error {response.status}, {response.headers}, {response.data}")
 
 if __name__ == "__main__":
-	puuid = getAccountPuuid(gameName, tagLine)
+	userCreds = None
+	with open("./config.json", 'r') as file:
+		UserCreds = json.loads(file.read())
+	print(UserCreds)
+	puuid = getAccountPuuid(UserCreds["gameName"], UserCreds["tagLine"])
 	print(puuid)
 	print(getRunningMatchId(puuid))
 	# get puuid
