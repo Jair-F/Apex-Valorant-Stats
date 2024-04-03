@@ -1,11 +1,16 @@
+import time
 import urllib3
 import json
+import os
+import sys
+import pygamesense
 
 locale:str = None # europe ap br esports eu
 api_key:str = None
 tagLine:int = None
 gameName:str = None
 puuid:str = None
+SSE3Addr = None # Steelseries 3 Engine Address - (ip:port)
 
 http = urllib3.PoolManager()
 
@@ -71,7 +76,70 @@ def getAccountPuuid(gameName:str, tagLine:str, locale:str="europe") -> str:
 	else:
 		raise ValueError(F"invalid parameter passed or other unknown error {response.status}, {response.headers}, {response.data}")
 
+def sendPost(addr:tuple, payloadObj:str, application:str):
+	app_reg_data = {
+		"game": "Apex-Valorant-Stats",
+		"game_display_name": 'Apex Valorant Stats',
+		"developer": 'developer'
+	}
+
+	http.request('POST', url=SSE3Addr + '/game_metadata', json=app_reg_data)
+
+	sendData = {
+		"device-type": "screened",
+		"game": "MYGAME",
+		"event": "MYEVENT",
+		"handlers": [{
+			"data": {
+				"device-type": "screened",
+                "mode": "screen",
+				"value": 56,
+				"frame": {
+					"textvalue": "this is some text",
+					"numericalvalue": 88
+					}
+				}
+		}]
+	}
+	http.request('POST', url=SSE3Addr + '/bind_game_event', json=sendData)
+
 if __name__ == "__main__":
+	client = pygamesense.SSE3Client("asdf", "asdf", "developer")
+	client.registerGame()
+	client.bindEvent("try", '')
+
+	for _ in range(10):
+		print("sending")
+		client.gameEvent("try")
+		time.sleep(1)
+
+	sys.exit(0)
+	
+	while not os.path.exists(F'{os.getenv('PROGRAMDATA')}/SteelSeries/SteelSeries Engine 3/coreProps.json'):
+		print("Steelseries Engine not running...", file=sys.stderr)
+		time.sleep(1)
+	else:
+		with open(F'{os.getenv('PROGRAMDATA')}/SteelSeries/SteelSeries Engine 3/coreProps.json') as file:
+			SSE3Addr = json.loads(file.read())['address']
+			print(SSE3Addr)
+
+	tmp = SSE3Addr + '/bind_game_event'
+	print(tmp)
+	sendPost(tmp, '', '')
+	tmp = SSE3Addr + '/game_event'
+	print(tmp)
+
+	for _ in range(10):
+		print("sending")
+		sendPost(tmp, '', '')
+		time.sleep(1)
+	
+	tmp = SSE3Addr + '/remove_game'
+	sendPost(tmp, '', '')
+	print(tmp)
+
+	sys.exit(0)
+
 	userCreds = None
 	with open("./config.json", 'r') as file:
 		UserCreds = json.loads(file.read())
