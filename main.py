@@ -148,7 +148,3 @@ if __name__ == "__main__":
 	print(puuid)
 	print(getRunningMatchId(puuid))
 	# get puuid
-	
-	
-	#resp, content = httplib2.Http().request('https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/BeautyBomb6/6767?api_key=RGAPI-31b4daf6-fdba-4099-81fb-7c6de58e5e62')
-	#print(resp)
